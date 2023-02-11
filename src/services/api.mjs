@@ -1,4 +1,5 @@
 import axios from 'axios'
+
 const data = JSON.stringify({
   query: `query {
   articles(PAGE: 1, PAGE_SIZE: 10, isFree: true) {
