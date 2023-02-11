@@ -32,5 +32,9 @@ var config = {
   data: data,
 }
 export const getArticles = async () => {
-  return (await axios(config)).data
+  try {
+    return (await axios(config)).data
+  } catch (error) {
+    console.log('Failed to retrieve data:', error)
+  }
 }
