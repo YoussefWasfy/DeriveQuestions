@@ -45,7 +45,9 @@ class DbManager {
     try {
       const db = this.getDb(dbName)
       const collection = db.collection(collectionName)
-      const results = await collection.find({}).toArray()
+      const results = await collection
+        .find({}, { projection: { _id: 0 } })
+        .toArray()
       console.log('Collection retrieved successfully.')
       return results
     } catch (error) {

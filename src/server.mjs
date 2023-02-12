@@ -9,6 +9,7 @@ app.get('/articles', async (req, res) => {
       process.env.DB_NAME,
       'articles'
     )
+
     res.send(articles)
   } catch (error) {
     res.sendStatus(500)
@@ -21,6 +22,7 @@ app.get('/articles/:id', async (req, res) => {
     const article = await dbManager.findOne(process.env.DB_NAME, 'articles', {
       articleId: id,
     })
+    delete article._id
     res.send(article)
   } catch (error) {
     console.log(error)
