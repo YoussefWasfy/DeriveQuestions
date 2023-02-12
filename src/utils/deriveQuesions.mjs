@@ -2,8 +2,6 @@ import dotenv from 'dotenv'
 import axios from 'axios'
 import nlp from 'compromise'
 
-const CHATGPT_URL = 'https://api.openai.com/v1/completions'
-
 dotenv.config()
 
 const getRandomInt = (max) => Math.floor(Math.random() * max)
