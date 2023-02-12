@@ -1,52 +1,61 @@
-import { Configuration, OpenAIApi } from 'openai'
 import dotenv from 'dotenv'
 import axios from 'axios'
+import nlp from 'compromise'
 
 const CHATGPT_URL = 'https://api.openai.com/v1/completions'
 
 dotenv.config()
 
-const configuration = new Configuration({
-  apiKey: process.env.OPEN_AI_API_KEY,
-  organization: 'org - nCH1DnOgTlnbmDznewnxn6lL',
-})
+const getRandomInt = (max) => Math.floor(Math.random() * max)
 
-const getRandomInt = (max) => Math.floor(Math.random() * max) + 1
-
-const generateQuestionOpenApi = async (article) => {
-  const axiosConfig = {
-    method: 'post',
-    url: CHATGPT_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPEN_AI_API_KEY}`,
-    },
-    data: {
-      model: 'text-davinci-003',
-      prompt: `Given the following article, generate question relevant to the article:\n${article}`,
-    },
-  }
-
-  const resp = await (await axios(axiosConfig)).data
-  const question = resp.choices[0].text
-  return question
+function removeDuplicates(array) {
+  return Array.from(new Set(array))
 }
-function removeUnwantedString(questions) {
-  return questions.map((question) => {
-    return question.replace(/^\n\n\n1\./g, '').trim()
+const getTagsAndCategories = (article) => {
+  const tags = article.tags
+  const categories = article.categories
+  const tagsAndCategoriesArray = []
+  tags.forEach((tag) => {
+    tagsAndCategoriesArray.push(tag.name)
   })
+  categories.forEach((category) => {
+    tagsAndCategoriesArray.push(category.name)
+  })
+
+  return tagsAndCategoriesArray
 }
 
-export const getQuestions = async (article) => {
+const generateQuestions = (article, tags) => {
+  const doc = nlp(article.searchContent)
   const questions = []
-  const numberOfQuestions = getRandomInt(10)
-  for (let index = 0; index < Math.ceil(numberOfQuestions / 2); index++) {
-    try {
-      const question = await generateQuestionOpenApi(article.searchContent)
-      questions.push(`${question.split('.').at(-1)}?`)
-    } catch (error) {
-      console.log(error)
-    }
-  }
+  const sentences = doc.sentences().data()
+  sentences.forEach((sentenceObj) => {
+    const sentence = sentenceObj.text
+    if (sentence.includes('?')) questions.push(sentence)
+    tags.forEach((tag) => {
+      if (sentence.includes(tag)) {
+        let question = ''
+        switch (getRandomInt(3)) {
+          case 0:
+            question = `Was ist die Verwendung von ${tag}?`
+            break
+          case 1:
+            question = `Warum ist ${tag} besser als der Konkurrent`
+          default:
+            question = `Was sind die vorteile von ${tag}`
+            break
+        }
+        questions.push(question)
+      }
+    })
+  })
+
+  return removeDuplicates(questions)
+}
+
+export const getQuestions = (article) => {
+  const keywords = getTagsAndCategories(article)
+  let questions = generateQuestions(article, keywords)
+  if (questions.length > 10) questions = questions.slice(0, 10)
   return questions
 }

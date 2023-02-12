@@ -1,11 +1,14 @@
 import mongoose from 'mongoose'
 
-const schema = new mongoose.Schema({
-  articleId: { type: mongoose.Types.ObjectId },
-  articleName: String,
-  articleText: String,
-  questions: [String],
-})
+const schema = new mongoose.Schema(
+  {
+    articleId: { type: String, unique: true, index: { unique: true } },
+    articleName: String,
+    articleText: String,
+    questions: [String],
+  },
+  { collection: 'articles' }
+)
 
 export const Document = mongoose.model('Document', schema)
 

@@ -11,7 +11,10 @@ export const saveQuestions = async (articles) => {
       articleText: article.searchContent,
       questions,
     }
-
-    await dbManager.insertOne(process.env.DB_NAME, 'articles', document)
+    try {
+      await dbManager.insertOne(process.env.DB_NAME, 'articles', document)
+    } catch (error) {
+      console.log('Error cannot insert document:', error)
+    }
   }
 }

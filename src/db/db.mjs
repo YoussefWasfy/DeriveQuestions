@@ -14,7 +14,7 @@ class DbManager {
       await this.client.connect()
       console.log('Successfully connected to MongoDB.')
     } catch (error) {
-      console.error('Error connecting to MongoDB:', error)
+      throw new Error(error)
     }
   }
 
@@ -26,10 +26,19 @@ class DbManager {
     try {
       const db = this.getDb(dbName)
       const collection = db.collection(collectionName)
+      const existingDocument = await collection.findOne({
+        articleId: document.articleId,
+      })
+      if (existingDocument) {
+        console.log(
+          `Article with articleId '${document.articleId}' already exists in the database.`
+        )
+        return
+      }
       await collection.insertOne(document)
       console.log('Document inserted successfully.')
     } catch (error) {
-      console.error('Error inserting document:', error)
+      throw new Error(error)
     }
   }
   async getCollection(dbName, collectionName) {
@@ -40,7 +49,7 @@ class DbManager {
       console.log('Collection retrieved successfully.')
       return results
     } catch (error) {
-      console.error('Error retrieving collection:', error)
+      throw new Error(error)
     }
   }
 
@@ -49,10 +58,11 @@ class DbManager {
       const db = this.getDb(dbName)
       const collection = db.collection(collectionName)
       const result = await collection.findOne(query)
+      if (!result) throw new Error('Not found')
       console.log('Document found successfully.')
       return result
     } catch (error) {
-      console.error('Error finding document:', error)
+      throw new Error(error)
     }
   }
 
@@ -63,7 +73,7 @@ class DbManager {
       await collection.updateOne(query, update)
       console.log('Document updated successfully.')
     } catch (error) {
-      console.error('Error updating document:', error)
+      throw new Error(error)
     }
   }
 
@@ -74,7 +84,7 @@ class DbManager {
       await collection.deleteOne(query)
       console.log('Document deleted successfully.')
     } catch (error) {
-      console.error('Error deleting document:', error)
+      throw new Error(error)
     }
   }
 
@@ -83,7 +93,7 @@ class DbManager {
       await this.client.close()
       console.log('Successfully disconnected from MongoDB.')
     } catch (error) {
-      console.error('Error disconnecting from MongoDB:', error)
+      throw new Error(error)
     }
   }
 }
